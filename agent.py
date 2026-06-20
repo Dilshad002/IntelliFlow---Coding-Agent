@@ -1,7 +1,7 @@
 import os
-import subprocess
 from typing import TypedDict
 from dotenv import load_dotenv
+from executor import execute_code
 from langchain_groq import ChatGroq
 from langgraph.graph import StateGraph, END
 from langchain_core.messages import SystemMessage, HumanMessage
@@ -16,18 +16,10 @@ class AgentState(TypedDict):
     attempts: int
     success: bool
 
-def execute_code(code: str) -> dict:
-    try:
-        result = subprocess.run(['python', '-c', code], 
-        capture_output=True, text=True, timeout=10)
-    except subprocess.TimeoutExpired:
-        return {"output": "", "error": "Code execution timed out after 10 seconds"}
-    out = {"output": result.stdout, "error": result.stderr}
-    return out
-
 llm = ChatGroq(model="openai/gpt-oss-120b", api_key=os.getenv("GROQ_API_KEY"))
 sm = '''Return only Python code. No markdown, no backticks, no explanation, no preamble, and
-     only use standard built in libraries like sys, os, math, random, itertools, collections, string, re, datetime, etc'''
+        only use standard built in libraries like sys, os, math, random, itertools, collections, string, re, datetime, etc. 
+        Do not read from stdin or use sys.argv. Use hardcoded example values to demonstrate the solution.'''
 
 def write_code(state: AgentState) -> AgentState:
     user = state["user_prompt"]
@@ -59,7 +51,7 @@ def evaluate(state: AgentState) -> AgentState:
 def fix_code(state: AgentState) -> AgentState:
     if "timed out" in state["error"]:
         print("Fixing code due to timeout error")
-        user = f"i wanted to do {state['user_prompt']}, and you gave me the code {state['code']}, and it ran infinitely and timed out with  the error {state['error']}.Rewrite it without infinite loops or expensive recursive calls."
+        user = f"i wanted to do {state['user_prompt']}, and you gave me the code {state['code']}, and it ran infinitely and timed out with  the error {state['error']}.Do not read from stdin. Use hardcoded example values instead and also avoid expensive recursive calls."
     else:
         print(f"Fixing code for error {state['error']}")
         user= f"i wanted to do {state['user_prompt']}, and you gave me the code {state['code']}, and it gave the error {state['error']}"
