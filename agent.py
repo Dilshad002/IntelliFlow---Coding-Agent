@@ -26,10 +26,12 @@ def execute_code(code: str) -> dict:
     return out
 
 llm = ChatGroq(model="openai/gpt-oss-120b", api_key=os.getenv("GROQ_API_KEY"))
-sm = "Return only Python code. No markdown, no backticks, no explanation, no preamble."
+sm = '''Return only Python code. No markdown, no backticks, no explanation, no preamble, and
+     only use standard built in libraries like sys, os, math, random, itertools, collections, string, re, datetime, etc'''
 
 def write_code(state: AgentState) -> AgentState:
     user = state["user_prompt"]
+    print(f"\nGenerating code for {user}")
     messages = [
         SystemMessage(content=sm),
         HumanMessage(content=user)
@@ -39,6 +41,7 @@ def write_code(state: AgentState) -> AgentState:
     return state
 
 def run_code(state: AgentState) -> AgentState:
+    print(f"\n[Attempt {state['attempts'] + 1}] Running code...")
     result = execute_code(state["code"])
     state["output"] = result["output"]
     state["error"] = result["error"]
@@ -46,14 +49,20 @@ def run_code(state: AgentState) -> AgentState:
     return state
 
 def evaluate(state: AgentState) -> AgentState:
-    if state["error"] == "":
+    if state["error"] == "" and state["output"] != "":
         state["success"] = True
     else:
         state["success"] = False
+    print(f"Output success: {state['success']}[Attend: {state['attempts']}]")
     return state
 
 def fix_code(state: AgentState) -> AgentState:
-    user= f"i wanted to do {state['user_prompt']}, and you gave me the code {state['code']}, and it gave the error {state['error']}"
+    if "timed out" in state["error"]:
+        print("Fixing code due to timeout error")
+        user = f"i wanted to do {state['user_prompt']}, and you gave me the code {state['code']}, and it ran infinitely and timed out with  the error {state['error']}.Rewrite it without infinite loops or expensive recursive calls."
+    else:
+        print(f"Fixing code for error {state['error']}")
+        user= f"i wanted to do {state['user_prompt']}, and you gave me the code {state['code']}, and it gave the error {state['error']}"
     messages = [
         SystemMessage(content=sm),
         HumanMessage(content=user)
