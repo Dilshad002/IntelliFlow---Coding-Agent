@@ -15,12 +15,14 @@ def run(request: RunRequest):
         "output": "",
         "error": "",
         "attempts": 0,
-        "success": False
+        "success": False,
+        "trace": []
     })
     out = {"code": result["code"], 
             "output": result["output"], 
             "error": result["error"], 
             "attempts": result["attempts"], 
-            "success": result["success"]
+            "success": result["success"],
+            "trace": result["trace"]
             }
     return out

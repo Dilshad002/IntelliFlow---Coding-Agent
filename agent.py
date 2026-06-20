@@ -15,6 +15,7 @@ class AgentState(TypedDict):
     error: str
     attempts: int
     success: bool
+    trace: list
 
 llm = ChatGroq(model="openai/gpt-oss-120b", api_key=os.getenv("GROQ_API_KEY"))
 sm = '''Return only Python code. No markdown, no backticks, no explanation, no preamble, and
@@ -23,6 +24,7 @@ sm = '''Return only Python code. No markdown, no backticks, no explanation, no p
 
 def write_code(state: AgentState) -> AgentState:
     user = state["user_prompt"]
+    state["trace"].append("Generating code for the first time")
     print(f"\nGenerating code for {user}")
     messages = [
         SystemMessage(content=sm),
@@ -33,6 +35,7 @@ def write_code(state: AgentState) -> AgentState:
     return state
 
 def run_code(state: AgentState) -> AgentState:
+    state["trace"].append(f"\n[Attempt {state['attempts'] + 1}] Running code...")
     print(f"\n[Attempt {state['attempts'] + 1}] Running code...")
     result = execute_code(state["code"])
     state["output"] = result["output"]
@@ -41,6 +44,7 @@ def run_code(state: AgentState) -> AgentState:
     return state
 
 def evaluate(state: AgentState) -> AgentState:
+    state["trace"].append("Checking the code for errors...")
     if state["error"] == "" and state["output"] != "":
         state["success"] = True
     else:
@@ -49,8 +53,9 @@ def evaluate(state: AgentState) -> AgentState:
     return state
 
 def fix_code(state: AgentState) -> AgentState:
+    state["trace"].append(f"Error detected: {state['error'][:80]}...")
     if "timed out" in state["error"]:
-        print("Fixing code due to timeout error")
+        print("Fixing code due to Timeout error")
         user = f"i wanted to do {state['user_prompt']}, and you gave me the code {state['code']}, and it ran infinitely and timed out with  the error {state['error']}.Do not read from stdin. Use hardcoded example values instead and also avoid expensive recursive calls."
     else:
         print(f"Fixing code for error {state['error']}")
@@ -88,7 +93,8 @@ if __name__ == "__main__":
         "output": "",
         "error": "",
         "attempts": 0,
-        "success": False
+        "success": False,
+        "trace": []
     })
     print("\n--- Final Code ---")
     print(result["code"])
