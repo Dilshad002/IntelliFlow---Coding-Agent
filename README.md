@@ -11,7 +11,7 @@ IntelliFlow takes a plain-English programming problem, generates code, executes 
 [![Streamlit](https://img.shields.io/badge/Frontend-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![Deployed on Render](https://img.shields.io/badge/Deployed-Render-46E3B7?logo=render&logoColor=white)](https://intelliflow-app.onrender.com)
 
-*Note: Hosted on Render free tier. The service spins down after 15 minutes of inactivity — first request may take 30–60 seconds to respond. If it times out, wait a moment and try again.*
+>*Note: Hosted on Render free tier. The service spins down after 15 minutes of inactivity — first request may take 30–60 seconds to respond. If it times out, wait a moment and try again.*
 ---
 
 ## Demo
