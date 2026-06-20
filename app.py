@@ -1,5 +1,8 @@
 import streamlit as st
 import requests
+import os
+
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 st.set_page_config(page_title="IntelliFlow", page_icon="⚡", layout="wide")
 
@@ -153,7 +156,7 @@ if run:
         with st.spinner("Agent is working..."):
             try:
                 response = requests.post(
-                    "http://localhost:8000/run",
+                    f"{API_URL}/run",
                     json={"user_prompt": prompt},
                     timeout=120
                 )
