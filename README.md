@@ -16,6 +16,7 @@ IntelliFlow takes a plain-English programming problem, generates code, executes 
 ## Demo
 
 **Prompt:** *"write a program that prints prime numbers infinitely"*
+![IntelliFlow Demo](assets/demo.gif)
 
 ```
 › Generating code for the first time
