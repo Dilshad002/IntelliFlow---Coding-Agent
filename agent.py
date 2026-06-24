@@ -49,7 +49,8 @@ def evaluate(state: AgentState) -> AgentState:
         state["success"] = True
     else:
         state["success"] = False
-    print(f"Output success: {state['success']}[Attend: {state['attempts']}]")
+    state["trace"].append(f"Output success: {state['success']}")
+    print(f"Output success: {state['success']}[Attempt: {state['attempts']}]")
     return state
 
 def fix_code(state: AgentState) -> AgentState:
